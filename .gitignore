@@ -1,3 +1,4 @@
 commit_message.tmp
 src/git_repo_inspector/__pycache__/*
 *.pyc
+commit_message.txt
