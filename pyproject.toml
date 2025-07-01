@@ -6,10 +6,12 @@ authors = ["Takashi Sasaki <takashi316@gmail.com>"]
 packages = [{ include = "git_repo_inspector", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.8.1"
+textual = "^3.5.0"
 
 [tool.poetry.scripts]
 git-repo-inspector = "git_repo_inspector.__main__:main"
+git-repo-inspector-tui = "git_repo_inspector.tui:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
