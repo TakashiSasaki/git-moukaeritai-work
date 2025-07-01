@@ -18,9 +18,9 @@ class TestRepoDirIntegration(unittest.TestCase):
             subprocess.run(["git", "init", repo_path], check=True, capture_output=True)
             loader = RepoDir(repo_path=repo_path)
 
-            self.assertEqual(loader.absolute_git_dir, os.path.join(repo_path, ".git"))
+            self.assertEqual(os.path.normpath(loader.absolute_git_dir), os.path.normpath(os.path.join(repo_path, ".git")))
             self.assertTrue(loader.is_inside_working_tree())
-            self.assertEqual(loader.get_toplevel_dir(), os.path.abspath(repo_path))
+            self.assertEqual(os.path.normpath(loader.get_toplevel_dir()), os.path.normpath(os.path.abspath(repo_path)))
             self.assertEqual(os.getcwd(), self.original_cwd)
 
     def test_bare_repository(self):
@@ -28,7 +28,7 @@ class TestRepoDirIntegration(unittest.TestCase):
             subprocess.run(["git", "init", "--bare", repo_path], check=True, capture_output=True)
             loader = RepoDir(repo_path=repo_path)
 
-            self.assertEqual(loader.absolute_git_dir, os.path.abspath(repo_path))
+            self.assertEqual(os.path.normpath(loader.absolute_git_dir), os.path.normpath(os.path.abspath(repo_path)))
             self.assertFalse(loader.is_inside_working_tree())
             self.assertIsNone(loader.toplevel_dir)
             with self.assertRaises(RuntimeError):
