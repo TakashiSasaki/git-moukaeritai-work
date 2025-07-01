@@ -45,14 +45,9 @@ class TestCommitLoader(unittest.TestCase):
         mock_get_branches.assert_called_once()
 
     @patch('git_repo_inspector.commit_loader.CommitLoader.get_commit_shas')
-    @patch('git_repo_inspector.commit_loader.CommitLoader.get_branches')
     @patch('subprocess.Popen')
-    def test_load_commits(self, mock_popen, mock_get_branches, mock_get_commit_shas):
+    def test_load_commits(self, mock_popen, mock_get_commit_shas):
         mock_get_commit_shas.return_value = ["commit_sha_1", "commit_sha_2"]
-        mock_get_branches.return_value = {
-            "commit_sha_1": ["main"],
-            "commit_sha_2": ["feature"]
-        }
 
         # Mock subprocess.Popen behavior
         mock_proc = MagicMock()
@@ -78,20 +73,12 @@ class TestCommitLoader(unittest.TestCase):
 
         self.assertEqual(commits[0].sha, "commit_sha_1")
         self.assertEqual(commits[0].tree, "tree_sha_1")
-        self.assertEqual(commits[0].parents, ["parent_sha_1"])
-        self.assertEqual(commits[0].author, "Author Name <author@example.com> 1234567890 +0000")
-        self.assertEqual(commits[0].committer, "Committer Name <committer@example.com> 1234567890 +0000")
         self.assertEqual(commits[0].message, "Commit message 1")
-        self.assertEqual(commits[0].branches, ["main"])
         self.assertEqual(commits[0].raw, commit_raw_1.decode('utf-8'))
 
         self.assertEqual(commits[1].sha, "commit_sha_2")
         self.assertEqual(commits[1].tree, "tree_sha_2")
-        self.assertEqual(commits[1].parents, ["parent_sha_2"])
-        self.assertEqual(commits[1].author, "Author Name <author@example.com> 1234567890 +0000")
-        self.assertEqual(commits[1].committer, "Committer Name <committer@example.com> 1234567890 +0000")
         self.assertEqual(commits[1].message, "Commit message 2")
-        self.assertEqual(commits[1].branches, ["feature"])
         self.assertEqual(commits[1].raw, commit_raw_2.decode('utf-8'))
 
         mock_popen.assert_called_once_with(
@@ -114,11 +101,7 @@ class TestCommitLoader(unittest.TestCase):
         valid_commit = Commit(
             sha=computed_sha,
             tree="4b825dc642cb6eb9a060e54bf8d69288fbee4904",
-            parents=[],
-            author="Test User <test@example.com> 1678886400 +0000",
-            committer="Test User <test@example.com> 1678886400 +0000",
             message="Initial commit",
-            branches=[],
             raw=raw_content
         )
         self.assertTrue(self.loader.verify_commit(valid_commit))
@@ -127,13 +110,9 @@ class TestCommitLoader(unittest.TestCase):
         # Create a dummy commit with incorrect SHA
         raw_content = "tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904\nauthor Test User <test@example.com> 1678886400 +0000\ncommitter Test User <test@example.com> 1678886400 +0000\n\nInitial commit\n"
         invalid_commit = Commit(
-            sha="incorrect_sha", # This SHA is intentionally wrong
+            sha="incorrect_sha",  # This SHA is intentionally wrong
             tree="4b825dc642cb6eb9a060e54bf8d69288fbee4904",
-            parents=[],
-            author="Test User <test@example.com> 1678886400 +0000",
-            committer="Test User <test@example.com> 1678886400 +0000",
             message="Initial commit",
-            branches=[],
             raw=raw_content
         )
         self.assertFalse(self.loader.verify_commit(invalid_commit))
@@ -147,7 +126,10 @@ class TestCommitLoader(unittest.TestCase):
         valid_computed_sha = hashlib.sha1(valid_header + valid_body_bytes).hexdigest()
 
         valid_commit = Commit(
-            sha=valid_computed_sha, raw=valid_raw, tree="", parents=[], author="", committer="", message="", branches=[]
+            sha=valid_computed_sha,
+            raw=valid_raw,
+            tree="",
+            message=""
         )
 
         invalid_raw = "tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904\nauthor Test User <test@example.com> 1678886400 +0000\ncommitter Test User <test@example.com> 1678886400 +0000\n\nInvalid commit\n"
@@ -155,7 +137,10 @@ class TestCommitLoader(unittest.TestCase):
         invalid_header = f"commit {len(invalid_body_bytes)}\0".encode('utf-8')
         # This SHA will be intentionally wrong
         invalid_commit = Commit(
-            sha="wrong_sha_for_invalid_commit", raw=invalid_raw, tree="", parents=[], author="", committer="", message="", branches=[]
+            sha="wrong_sha_for_invalid_commit",
+            raw=invalid_raw,
+            tree="",
+            message=""
         )
         
         mock_load_commits.return_value = [valid_commit, invalid_commit]
@@ -194,12 +179,12 @@ class TestCommitLoader(unittest.TestCase):
     @patch('git_repo_inspector.commit_loader.CommitLoader.load_commits')
     def test_list_commits_json(self, mock_load_commits):
         mock_load_commits.return_value = [
-            Commit(sha="sha1", tree="tree1", parents=[], author="A", committer="A", message="Msg1", branches=["main"], raw="raw1"),
-            Commit(sha="sha2", tree="tree2", parents=["sha1"], author="B", committer="B", message="Msg2", branches=[], raw="raw2")
+            Commit(sha="sha1", tree="tree1", message="Msg1", raw="raw1"),
+            Commit(sha="sha2", tree="tree2", message="Msg2", raw="raw2")
         ]
         expected_json = json.dumps([
-            {'sha': 'sha1', 'tree': 'tree1', 'parents': [], 'author': 'A', 'committer': 'A', 'message': 'Msg1', 'branches': ['main'], 'raw': 'raw1'},
-            {'sha': 'sha2', 'tree': 'tree2', 'parents': ['sha1'], 'author': 'B', 'committer': 'B', 'message': 'Msg2', 'branches': [], 'raw': 'raw2'}
+            {'sha': 'sha1', 'tree': 'tree1', 'message': 'Msg1', 'raw': 'raw1'},
+            {'sha': 'sha2', 'tree': 'tree2', 'message': 'Msg2', 'raw': 'raw2'}
         ], indent=2)
         
         self.assertEqual(self.loader.list_commits_json(), expected_json)

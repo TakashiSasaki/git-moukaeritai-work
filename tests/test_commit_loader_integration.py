@@ -34,11 +34,7 @@ class TestCommitLoaderIntegration(unittest.TestCase):
             self.assertEqual(len(commits), 2)
             commit_map = {c.sha: c for c in commits}
             self.assertEqual(commit_map[sha_main].message, "initial")
-            self.assertEqual(commit_map[sha_main].branches, ["main"])
-            self.assertEqual(commit_map[sha_main].parents, [])
             self.assertEqual(commit_map[sha_feature].message, "feature")
-            self.assertEqual(commit_map[sha_feature].branches, ["feature"])
-            self.assertEqual(commit_map[sha_feature].parents, [sha_main])
         finally:
             repo_dir.cleanup()
 
@@ -59,9 +55,7 @@ class TestCommitLoaderIntegration(unittest.TestCase):
             data = json.loads(json_output)
             commit_map = {d['sha']: d for d in data}
             self.assertEqual(commit_map[sha_main]['message'], 'initial')
-            self.assertEqual(commit_map[sha_main]['branches'], ['main'])
             self.assertEqual(commit_map[sha_feature]['message'], 'feature')
-            self.assertEqual(commit_map[sha_feature]['branches'], ['feature'])
         finally:
             repo_dir.cleanup()
 

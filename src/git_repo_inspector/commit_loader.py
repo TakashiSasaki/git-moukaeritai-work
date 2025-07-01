@@ -13,11 +13,7 @@ from .branch_loader import BranchLoader
 class Commit(NamedTuple):
     sha: str
     tree: str
-    parents: List[str]
-    author: str
-    committer: str
     message: str
-    branches: List[str]
     raw: str
 
 class CommitLoader:
@@ -57,12 +53,11 @@ class CommitLoader:
 
     def load_commits(self) -> List[Commit]:
         """
-        Load all commits from the repository into memory, including branch annotations.
+        Load all commits from the repository into memory.
 
         :return: List of Commit namedtuples
         """
         shas: List[str] = self.get_commit_shas()
-        branch_map: Dict[str, List[str]] = self.get_branches()
         cmd_cat: List[str] = ['git', '-C', self.repo_path, 'cat-file', '--batch']
 
         p_cat: subprocess.Popen = subprocess.Popen(
@@ -93,9 +88,6 @@ class CommitLoader:
             # Split header lines and commit message
             lines: List[str] = text.split('\n')
             tree: str = ''
-            parents: List[str] = []
-            author: str = ''
-            committer: str = ''
             idx: int = 0
 
             # Parse header fields
@@ -103,28 +95,16 @@ class CommitLoader:
                 key, value = lines[idx].split(' ', 1)
                 if key == 'tree':
                     tree = value
-                elif key == 'parent':
-                    parents.append(value)
-                elif key == 'author':
-                    author = value
-                elif key == 'committer':
-                    committer = value
                 idx += 1
 
             # The rest is the commit message
             message: str = '\n'.join(lines[idx+1:]).strip()
-            # Assign branches for this commit
-            branches: List[str] = branch_map.get(sha, [])
 
             commits.append(
                 Commit(
                     sha=sha,
                     tree=tree,
-                    parents=parents,
-                    author=author,
-                    committer=committer,
                     message=message,
-                    branches=branches,
                     raw=raw_content
                 )
             )
