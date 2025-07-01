@@ -221,6 +221,10 @@ class GitRepoInspectorTUI(App):
                 self.repo_info_widget.update(f"Error: Path '{new_path_str}' is not a valid directory.")
 
 
-if __name__ == "__main__":
+def main():
+    """The main entry point for the TUI application."""
     app = GitRepoInspectorTUI()
     app.run()
+
+if __name__ == "__main__":
+    main()
