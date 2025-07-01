@@ -18,9 +18,9 @@ class TestRepoDir(unittest.TestCase):
     @patch('subprocess.run')
     @patch('os.chdir')
     def test_init_success_no_path(self, mock_chdir, mock_subprocess_run):
-        # Mock git rev-parse --absolute-git-dir
+        # Mock git rev-parse --absolute-git-dir, --is-bare-repository, --show-toplevel
         mock_subprocess_run.side_effect = [
-            MagicMock(stdout=self.mock_git_dir + "\n"),
+            MagicMock(stdout=self.mock_git_dir + "\n"), # --absolute-git-dir
             MagicMock(stdout="false\n"), # --is-bare-repository
             MagicMock(stdout=self.mock_toplevel_dir + "\n") # --show-toplevel
         ]
@@ -38,9 +38,9 @@ class TestRepoDir(unittest.TestCase):
     @patch('os.chdir')
     def test_init_success_with_path(self, mock_chdir, mock_subprocess_run):
         mock_repo_path = "/path/to/test/repo"
-        # Mock git rev-parse --absolute-git-dir
+        # Mock git rev-parse --absolute-git-dir, --is-bare-repository, --show-toplevel
         mock_subprocess_run.side_effect = [
-            MagicMock(stdout=self.mock_git_dir + "\n"),
+            MagicMock(stdout=self.mock_git_dir + "\n"), # --absolute-git-dir
             MagicMock(stdout="false\n"), # --is-bare-repository
             MagicMock(stdout=self.mock_toplevel_dir + "\n") # --show-toplevel
         ]
@@ -73,7 +73,7 @@ class TestRepoDir(unittest.TestCase):
     @patch('os.chdir')
     def test_is_inside_working_tree_non_bare(self, mock_chdir, mock_subprocess_run):
         mock_subprocess_run.side_effect = [
-            MagicMock(stdout=self.mock_git_dir + "\n"),
+            MagicMock(stdout=self.mock_git_dir + "\n"), # --absolute-git-dir
             MagicMock(stdout="false\n"), # --is-bare-repository
             MagicMock(stdout=self.mock_toplevel_dir + "\n") # --show-toplevel
         ]
@@ -84,18 +84,18 @@ class TestRepoDir(unittest.TestCase):
     @patch('os.chdir')
     def test_is_inside_working_tree_bare(self, mock_chdir, mock_subprocess_run):
         mock_subprocess_run.side_effect = [
-            MagicMock(stdout=self.mock_git_dir + "\n"),
+            MagicMock(stdout=self.mock_git_dir + "\n"), # --absolute-git-dir
             MagicMock(stdout="true\n"), # --is-bare-repository
-            MagicMock(stdout=self.mock_toplevel_dir + "\n") # --show-toplevel
         ]
         loader = RepoDir()
         self.assertFalse(loader.is_inside_working_tree())
+        self.assertIsNone(loader.toplevel_dir)
 
     @patch('subprocess.run')
     @patch('os.chdir')
     def test_get_toplevel_dir_non_bare(self, mock_chdir, mock_subprocess_run):
         mock_subprocess_run.side_effect = [
-            MagicMock(stdout=self.mock_git_dir + "\n"),
+            MagicMock(stdout=self.mock_git_dir + "\n"), # --absolute-git-dir
             MagicMock(stdout="false\n"), # --is-bare-repository
             MagicMock(stdout=self.mock_toplevel_dir + "\n") # --show-toplevel
         ]
@@ -106,9 +106,8 @@ class TestRepoDir(unittest.TestCase):
     @patch('os.chdir')
     def test_get_toplevel_dir_bare(self, mock_chdir, mock_subprocess_run):
         mock_subprocess_run.side_effect = [
-            MagicMock(stdout=self.mock_git_dir + "\n"),
+            MagicMock(stdout=self.mock_git_dir + "\n"), # --absolute-git-dir
             MagicMock(stdout="true\n"), # --is-bare-repository
-            MagicMock(stdout=self.mock_toplevel_dir + "\n") # --show-toplevel
         ]
         loader = RepoDir()
         with self.assertRaisesRegex(RuntimeError, "Cannot get top-level directory for a bare repository."): 
