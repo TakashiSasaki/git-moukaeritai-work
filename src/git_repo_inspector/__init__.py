@@ -1,1 +1,1 @@
-from .commit_loader import GitCommitLoader
+from .commit_loader import CommitLoader

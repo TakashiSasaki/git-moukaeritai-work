@@ -1,5 +1,5 @@
-# File: git_commit_loader.py
-# GitCommitLoader: Load and parse Git commit objects into memory using git cat-file --batch
+# File: commit_loader.py
+# CommitLoader: Load and parse Git commit objects into memory using git cat-file --batch
 
 import subprocess
 import json
@@ -18,7 +18,7 @@ class Commit(NamedTuple):
     branches: List[str]
     raw: str
 
-class GitCommitLoader:
+class CommitLoader:
     """
     A loader class to retrieve Git commit objects from a repository and parse them into Commit tuples.
     """
