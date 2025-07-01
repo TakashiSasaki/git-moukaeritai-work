@@ -2,46 +2,47 @@ import subprocess
 import argparse
 import os
 import json
+from typing import Dict, List, Optional
 
 class BranchLoader:
     """
     A loader class to retrieve Git branch information from a repository.
     """
-    def __init__(self, repo_path):
+    def __init__(self, repo_path: str) -> None:
         """
         Initialize the loader with the path to the Git repository.
 
         :param repo_path: Path to the root of a Git repository
         """
-        self.repo_path = repo_path
-        self.branch_map = None  # maps commit SHA to list of branch names
+        self.repo_path: str = repo_path
+        self.branch_map: Optional[Dict[str, List[str]]] = None  # maps commit SHA to list of branch names
 
-    def get_branches(self):
+    def get_branches(self) -> Dict[str, List[str]]:
         """
         Retrieve and cache a mapping from commit SHA to branch names.
 
         :return: Dict mapping SHA -> list of branch names
         """
         if self.branch_map is None:
-            cmd = [
+            cmd: List[str] = [
                 'git', '-C', self.repo_path,
                 'for-each-ref',
                 '--format=%(refname:short) %(objectname)',
                 'refs/heads/'
             ]
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, text=True, check=True)
+            result: subprocess.CompletedProcess = subprocess.run(cmd, stdout=subprocess.PIPE, text=True, check=True)
             self.branch_map = {}
             for line in result.stdout.splitlines():
                 name, sha = line.split(None, 1)
                 self.branch_map.setdefault(sha, []).append(name)
         return self.branch_map
 
-    def to_json(self):
+    def to_json(self) -> str:
         """
         Return the branch-to-SHA mappings as a JSON string.
         """
-        branches = self.get_branches()
-        output = []
+        branches: Dict[str, List[str]] = self.get_branches()
+        output: List[Dict[str, str]] = []
         for sha, names in branches.items():
             for name in names:
                 output.append({'branch': name, 'sha': sha})
