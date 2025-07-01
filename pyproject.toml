@@ -2,7 +2,7 @@
 name = "git-commit-loader"
 version = "0.1.0"
 description = "Load and parse Git commit objects"
-authors = ["Your Name <you@example.com>"]
+authors = ["Takashi Sasaki <takashi316@gmail.com>"]
 packages = [{ include = "git_commit_loader", from = "src" }]
 
 [tool.poetry.dependencies]
