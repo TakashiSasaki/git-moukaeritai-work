@@ -29,13 +29,6 @@ class RepoDir:
             )
             self.absolute_git_dir: str = result_git_dir.stdout.strip()
 
-            # Get top-level working directory
-            result_toplevel = subprocess.run(
-                ['git', 'rev-parse', '--show-toplevel'],
-                capture_output=True, text=True, check=True
-            )
-            self.toplevel_dir: str = result_toplevel.stdout.strip()
-
             # Check if it's a bare repository
             result_is_bare = subprocess.run(
                 ['git', 'rev-parse', '--is-bare-repository'],
@@ -43,6 +36,15 @@ class RepoDir:
                 cwd=target_path # Run this command in the context of the target path
             )
             self._is_bare: bool = result_is_bare.stdout.strip() == 'true'
+
+            self.toplevel_dir: Optional[str] = None
+            if not self._is_bare:
+                # Get top-level working directory only for non-bare repositories
+                result_toplevel = subprocess.run(
+                    ['git', 'rev-parse', '--show-toplevel'],
+                    capture_output=True, text=True, check=True
+                )
+                self.toplevel_dir = result_toplevel.stdout.strip()
 
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Git command failed: {e.stderr}") from e
@@ -68,7 +70,7 @@ class RepoDir:
         :return: The absolute path to the top-level working directory.
         :raises RuntimeError: If the repository is bare (no working tree).
         """
-        if self._is_bare:
+        if self._is_bare or self.toplevel_dir is None:
             raise RuntimeError("Cannot get top-level directory for a bare repository.")
         return self.toplevel_dir
 
