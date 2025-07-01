@@ -6,6 +6,7 @@ from collections import namedtuple
 import os
 import argparse
 import json
+import hashlib
 
 # Extend Commit to include branch names and raw content
 Commit = namedtuple('Commit', ['sha', 'tree', 'parents', 'author', 'committer', 'message', 'branches', 'raw'])
@@ -127,6 +128,34 @@ class GitCommitLoader:
 
         return commits
 
+    def verify_commit(self, commit):
+        """
+        Recompute the SHA-1 of a commit from its raw content and verify against the stored SHA.
+
+        :param commit: Commit namedtuple
+        :return: True if recomputed SHA matches, False otherwise
+        """
+        body_bytes = commit.raw.encode('utf-8')
+        header = f"commit {len(body_bytes)}\0".encode('utf-8')
+        computed = hashlib.sha1(header + body_bytes).hexdigest()
+        return computed == commit.sha
+
+    def verify_all_commits(self):
+        """
+        Verify all loaded commits, returning a list of mismatched SHAs.
+
+        :return: List of tuples (commit_sha, recomputed_sha) for mismatches
+        """
+        mismatches = []
+        for commit in self.load_commits():
+            if not self.verify_commit(commit):
+                # Recompute for reporting
+                body_bytes = commit.raw.encode('utf-8')
+                header = f"commit {len(body_bytes)}\0".encode('utf-8')
+                recomputed = hashlib.sha1(header + body_bytes).hexdigest()
+                mismatches.append((commit.sha, recomputed))
+        return mismatches
+
     def list_branches_json(self):
         """
         List branch names with their corresponding commit SHAs as JSON.
@@ -150,7 +179,6 @@ class GitCommitLoader:
         output = []
         for c in commits:
             d = c._asdict()
-            # raw content under key 'raw'
             output.append(d)
         return json.dumps(output, indent=2)
 
@@ -165,11 +193,21 @@ if __name__ == '__main__':
                        help='Load and list commit objects')
     parser.add_argument('--json', action='store_true',
                         help='Output in JSON format')
+    parser.add_argument('--verify', action='store_true',
+                        help='Verify commit SHAs against raw content')
     args = parser.parse_args()
 
     loader = GitCommitLoader(repo_path=args.repo_path)
 
-    if args.list_branches:
+    if args.verify:
+        mismatches = loader.verify_all_commits()
+        if mismatches:
+            print("Mismatched commits:")
+            for sha, rec in mismatches:
+                print(f"{sha} != {rec}")
+        else:
+            print("All commits verified successfully.")
+    elif args.list_branches:
         if args.json:
             print(loader.list_branches_json())
         else:
