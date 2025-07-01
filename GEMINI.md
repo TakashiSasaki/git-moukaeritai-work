@@ -6,3 +6,5 @@
 Windows では mv コマンドの代わりに move コマンドを使用してください。
 
 *.pyc ファイルはコミットしないでください。
+
+Windows 環境では pytest にパスが通っていないことがあるので、python -m pytest を使用してください。
