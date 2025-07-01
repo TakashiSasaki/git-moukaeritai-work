@@ -47,7 +47,9 @@ class RepoDir:
                 self.toplevel_dir = result_toplevel.stdout.strip()
 
         except subprocess.CalledProcessError as e:
-            raise RuntimeError(f"Git command failed: {e.stderr}") from e
+            cmd = " ".join(e.cmd) if isinstance(e.cmd, (list, tuple)) else str(e.cmd)
+            stderr = e.stderr.strip() if e.stderr else ""
+            raise RuntimeError(f"Git command failed ({cmd}): {stderr}") from e
         except FileNotFoundError:
             raise RuntimeError("Git command not found. Please ensure Git is installed and in your PATH.")
         finally:
