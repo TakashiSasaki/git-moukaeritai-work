@@ -1,7 +1,7 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-from .branch_loader import BranchLoader
+from git_repo_inspector.branch_loader import BranchLoader
 import subprocess
 
 class TestBranchLoader(unittest.TestCase):
