@@ -1,0 +1,75 @@
+/* Basic CSS for GitRepoInspectorTUI */
+
+/* Screen layout */
+Screen {
+    layout: vertical;
+    overflow-y: auto;
+}
+
+/* Header and Footer */
+Header {
+    dock: top;
+    background: $primary-background-darken-1;
+}
+
+Footer {
+    dock: bottom;
+    background: $primary-background-darken-1;
+}
+
+/* Directory input bar */
+#dir_input_bar {
+    dock: top;
+    padding: 1;
+    background: $surface;
+    height: auto;
+    layout: horizontal;
+}
+
+#dir_input_bar Label {
+    width: auto;
+    padding-right: 1;
+}
+
+#dir_input_bar Input {
+    width: 1fr; /* Takes remaining space */
+    margin-right: 1;
+}
+
+#dir_input_bar Button {
+    width: auto;
+    min-width: 18; /* Ensure button text is visible */
+}
+
+/* Main content area */
+#main_content {
+    padding: 1;
+    layout: vertical;
+    overflow-y: auto; /* Allow scrolling if content exceeds space */
+}
+
+/* Individual info sections */
+#repo_info, #branch_info, #commit_info {
+    border: round $primary-lighten-2;
+    padding: 1;
+    margin-bottom: 1;
+    height: auto; /* Adjust height based on content */
+    min-height: 5; /* Minimum height for visibility */
+}
+
+#repo_info {
+    /* Specific styles for repo_info if needed */
+}
+
+#branch_info {
+    /* Specific styles for branch_info if needed */
+}
+
+#commit_info {
+    /* Specific styles for commit_info if needed */
+}
+
+/* Styling for Static widgets used as placeholders */
+Static {
+    width: 100%;
+}
