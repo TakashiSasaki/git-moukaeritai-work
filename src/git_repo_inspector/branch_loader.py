@@ -5,9 +5,9 @@ import json
 from typing import Dict, List, Optional
 
 class BranchLoader:
-    """
-    A loader class to retrieve Git branch information from a repository.
-    """
+    """A loader class to retrieve Git branch information from a repository."""
+
+    __slots__ = ("repo_path", "branch_map")
     def __init__(self, repo_path: str) -> None:
         """
         Initialize the loader with the path to the Git repository.
