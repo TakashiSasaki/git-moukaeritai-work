@@ -5,6 +5,7 @@ import subprocess
 from collections import namedtuple
 import os
 import argparse
+import json
 
 # Extend Commit to include branch names
 Commit = namedtuple('Commit', ['sha', 'tree', 'parents', 'author', 'committer', 'message', 'branches'])
@@ -122,6 +123,29 @@ class GitCommitLoader:
 
         return commits
 
+    def list_branches(self):
+        """
+        List branch names with their corresponding commit SHAs as JSON.
+
+        :return: JSON string of branch-to-SHA mappings
+        """
+        branches = self.get_branches()
+        output = []
+        for sha, names in branches.items():
+            for name in names:
+                output.append({'branch': name, 'sha': sha})
+        return json.dumps(output, indent=2)
+
+    def list_commits_json(self):
+        """
+        List all commits as JSON.
+
+        :return: JSON string of commits
+        """
+        commits = self.load_commits()
+        output = [c._asdict() for c in commits]
+        return json.dumps(output, indent=2)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Git commit loader utility')
     parser.add_argument('repo_path', nargs='?', default=os.getcwd(),
@@ -131,18 +155,26 @@ if __name__ == '__main__':
                        help='List branch names with their corresponding commit SHAs')
     group.add_argument('--list-commits', action='store_true',
                        help='Load and list commit objects')
+    parser.add_argument('--json', action='store_true',
+                        help='Output in JSON format')
     args = parser.parse_args()
 
     loader = GitCommitLoader(repo_path=args.repo_path)
 
     if args.list_branches:
-        branches = loader.get_branches()
-        for sha, names in branches.items():
-            for name in names:
-                print(f"{name}: {sha}")
+        if args.json:
+            print(loader.list_branches())
+        else:
+            branches = loader.get_branches()
+            for sha, names in branches.items():
+                for name in names:
+                    print(f"{name}: {sha}")
     else:
         # Default or --list-commits
-        commits = loader.load_commits()
-        print(f"Loaded {len(commits)} commits from {args.repo_path}")
-        for c in commits:
-            print(c)
+        if args.json:
+            print(loader.list_commits_json())
+        else:
+            commits = loader.load_commits()
+            print(f"Loaded {len(commits)} commits from {args.repo_path}")
+            for c in commits:
+                print(c)
