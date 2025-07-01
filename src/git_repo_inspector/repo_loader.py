@@ -2,13 +2,14 @@ import subprocess
 import os
 from typing import Optional
 
-class RepoLoader:
+class RepoDir:
+    __slots__ = ('absolute_git_dir', 'toplevel_dir')
     """
     A class to represent a Git repository and retrieve its essential paths.
     """
     def __init__(self, repo_path: Optional[str] = None) -> None:
         """
-        Initialize the RepoLoader with an optional path to the Git repository.
+        Initialize the RepoDir with an optional path to the Git repository.
         If a path is provided, the current working directory will be changed to it.
 
         :param repo_path: Path to the root of a Git repository. If None, uses the current working directory.
@@ -45,9 +46,9 @@ class RepoLoader:
 
 
 def main():
-    """Command-line entry point for RepoLoader."""
+    """Command-line entry point for RepoDir."""
     try:
-        loader = RepoLoader()
+        loader = RepoDir()
         print(f"Absolute Git Directory: {loader.absolute_git_dir}")
         print(f"Top-level Working Directory: {loader.toplevel_dir}")
     except (FileNotFoundError, RuntimeError) as e:
