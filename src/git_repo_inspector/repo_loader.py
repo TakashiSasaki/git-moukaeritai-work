@@ -3,7 +3,7 @@ import os
 from typing import Optional
 
 class RepoDir:
-    __slots__ = ('absolute_git_dir',)
+    __slots__ = ('absolute_git_dir', 'toplevel_dir', '_is_bare')
 
     def __init__(self, repo_path: Optional[str] = None) -> None:
         """
@@ -28,6 +28,13 @@ class RepoDir:
                 capture_output=True, text=True, check=True
             )
             self.absolute_git_dir: str = result_git_dir.stdout.strip()
+
+            # Get top-level working directory
+            result_toplevel = subprocess.run(
+                ['git', 'rev-parse', '--show-toplevel'],
+                capture_output=True, text=True, check=True
+            )
+            self.toplevel_dir: str = result_toplevel.stdout.strip()
 
             # Check if it's a bare repository
             result_is_bare = subprocess.run(
@@ -54,12 +61,26 @@ class RepoDir:
         return not self._is_bare
 
 
+    def get_toplevel_dir(self) -> str:
+        """
+        Returns the path to the top-level working directory of the Git repository.
+
+        :return: The absolute path to the top-level working directory.
+        :raises RuntimeError: If the repository is bare (no working tree).
+        """
+        if self._is_bare:
+            raise RuntimeError("Cannot get top-level directory for a bare repository.")
+        return self.toplevel_dir
+
+
 def main():
     """Command-line entry point for RepoDir."""
     try:
         loader = RepoDir()
         print(f"Absolute Git Directory: {loader.absolute_git_dir}")
         print(f"Is inside working tree: {loader.is_inside_working_tree()}")
+        if loader.is_inside_working_tree():
+            print(f"Top-level Working Directory: {loader.get_toplevel_dir()}")
     except (FileNotFoundError, RuntimeError) as e:
         print(f"Error: {e}")
 
