@@ -3,7 +3,7 @@ import os
 from typing import Optional
 
 class RepoDir:
-    __slots__ = ('absolute_git_dir', 'toplevel_dir')
+    __slots__ = ('absolute_git_dir',)
     """
     A class to represent a Git repository and retrieve its essential paths.
     """
@@ -29,13 +29,6 @@ class RepoDir:
             )
             self.absolute_git_dir: str = result_git_dir.stdout.strip()
 
-            # Get top-level working directory
-            result_toplevel = subprocess.run(
-                ['git', 'rev-parse', '--show-toplevel'],
-                capture_output=True, text=True, check=True
-            )
-            self.toplevel_dir: str = result_toplevel.stdout.strip()
-
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Git command failed: {e.stderr}") from e
         except FileNotFoundError:
@@ -50,7 +43,6 @@ def main():
     try:
         loader = RepoDir()
         print(f"Absolute Git Directory: {loader.absolute_git_dir}")
-        print(f"Top-level Working Directory: {loader.toplevel_dir}")
     except (FileNotFoundError, RuntimeError) as e:
         print(f"Error: {e}")
 
