@@ -4,9 +4,7 @@ from typing import Optional
 
 class RepoDir:
     __slots__ = ('absolute_git_dir',)
-    """
-    A class to represent a Git repository and retrieve its essential paths.
-    """
+
     def __init__(self, repo_path: Optional[str] = None) -> None:
         """
         Initialize the RepoDir with an optional path to the Git repository.
@@ -15,6 +13,8 @@ class RepoDir:
         :param repo_path: Path to the root of a Git repository. If None, uses the current working directory.
         """
         original_cwd = os.getcwd()
+        target_path = repo_path if repo_path else original_cwd
+
         if repo_path:
             try:
                 os.chdir(repo_path)
@@ -29,6 +29,14 @@ class RepoDir:
             )
             self.absolute_git_dir: str = result_git_dir.stdout.strip()
 
+            # Check if it's a bare repository
+            result_is_bare = subprocess.run(
+                ['git', 'rev-parse', '--is-bare-repository'],
+                capture_output=True, text=True, check=True,
+                cwd=target_path # Run this command in the context of the target path
+            )
+            self._is_bare: bool = result_is_bare.stdout.strip() == 'true'
+
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Git command failed: {e.stderr}") from e
         except FileNotFoundError:
@@ -37,12 +45,21 @@ class RepoDir:
             # Always change back to the original working directory
             os.chdir(original_cwd)
 
+    def is_inside_working_tree(self) -> bool:
+        """
+        Checks if the .git directory is inside a working tree (i.e., not a bare repository).
+
+        :return: True if it's a non-bare repository with a working tree, False otherwise.
+        """
+        return not self._is_bare
+
 
 def main():
     """Command-line entry point for RepoDir."""
     try:
         loader = RepoDir()
         print(f"Absolute Git Directory: {loader.absolute_git_dir}")
+        print(f"Is inside working tree: {loader.is_inside_working_tree()}")
     except (FileNotFoundError, RuntimeError) as e:
         print(f"Error: {e}")
 
