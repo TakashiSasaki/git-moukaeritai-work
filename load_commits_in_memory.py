@@ -4,6 +4,7 @@
 import subprocess
 from collections import namedtuple
 import os
+import argparse
 
 # Extend Commit to include branch names
 Commit = namedtuple('Commit', ['sha', 'tree', 'parents', 'author', 'committer', 'message', 'branches'])
@@ -122,15 +123,26 @@ class GitCommitLoader:
         return commits
 
 if __name__ == '__main__':
-    # Example usage
-    repo = os.getcwd()  # Default to current directory
-    loader = GitCommitLoader(repo_path=repo)
-    shas = loader.get_commit_shas()
-    print(f"Found {len(shas)} commit SHAs in {repo}")
-    branches = loader.get_branches()
-    print(f"Branches mapping loaded: {branches}")
-    commits = loader.load_commits()
-    print(f"Loaded {len(commits)} commits from {repo}")
-    if commits:
-        print(commits[0])
-        print(commits[-1])
+    parser = argparse.ArgumentParser(description='Git commit loader utility')
+    parser.add_argument('repo_path', nargs='?', default=os.getcwd(),
+                        help='Path to the Git repository (default: current directory)')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--list-branches', action='store_true',
+                       help='List branch names with their corresponding commit SHAs')
+    group.add_argument('--list-commits', action='store_true',
+                       help='Load and list commit objects')
+    args = parser.parse_args()
+
+    loader = GitCommitLoader(repo_path=args.repo_path)
+
+    if args.list_branches:
+        branches = loader.get_branches()
+        for sha, names in branches.items():
+            for name in names:
+                print(f"{name}: {sha}")
+    else:
+        # Default or --list-commits
+        commits = loader.load_commits()
+        print(f"Loaded {len(commits)} commits from {args.repo_path}")
+        for c in commits:
+            print(c)
