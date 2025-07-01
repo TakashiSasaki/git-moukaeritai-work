@@ -6,6 +6,7 @@ from typing import List, Dict, Optional, Tuple, Any
 
 from git_repo_inspector.commit_loader import CommitLoader, Commit
 from git_repo_inspector.branch_loader import BranchLoader
+import subprocess
 
 class TestCommitLoader(unittest.TestCase):
 
