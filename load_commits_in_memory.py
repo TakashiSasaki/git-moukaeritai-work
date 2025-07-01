@@ -5,7 +5,8 @@ import subprocess
 from collections import namedtuple
 import os
 
-Commit = namedtuple('Commit', ['sha', 'tree', 'parents', 'author', 'committer', 'message'])
+# Extend Commit to include branch names
+Commit = namedtuple('Commit', ['sha', 'tree', 'parents', 'author', 'committer', 'message', 'branches'])
 
 class GitCommitLoader:
     """
@@ -19,6 +20,7 @@ class GitCommitLoader:
         """
         self.repo_path = repo_path
         self.commit_shas = None
+        self.branch_map = None  # maps commit SHA to list of branch names
 
     def get_commit_shas(self):
         """
@@ -32,13 +34,34 @@ class GitCommitLoader:
             self.commit_shas = result.stdout.splitlines()
         return self.commit_shas
 
+    def get_branches(self):
+        """
+        Retrieve and cache a mapping from commit SHA to branch names.
+
+        :return: Dict mapping SHA -> list of branch names
+        """
+        if self.branch_map is None:
+            cmd = [
+                'git', '-C', self.repo_path,
+                'for-each-ref',
+                '--format=%(refname:short) %(objectname)',
+                'refs/heads/'
+            ]
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, text=True, check=True)
+            self.branch_map = {}
+            for line in result.stdout.splitlines():
+                name, sha = line.split(None, 1)
+                self.branch_map.setdefault(sha, []).append(name)
+        return self.branch_map
+
     def load_commits(self):
         """
-        Load all commits from the repository into memory.
+        Load all commits from the repository into memory, including branch annotations.
 
         :return: List of Commit namedtuples
         """
         shas = self.get_commit_shas()
+        branch_map = self.get_branches()
         cmd_cat = ['git', '-C', self.repo_path, 'cat-file', '--batch']
 
         p_cat = subprocess.Popen(cmd_cat, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -81,6 +104,8 @@ class GitCommitLoader:
 
             # The rest is the commit message
             message = '\n'.join(lines[idx+1:]).strip()
+            # Assign branches for this commit
+            branches = branch_map.get(sha, [])
 
             commits.append(
                 Commit(
@@ -89,7 +114,8 @@ class GitCommitLoader:
                     parents=parents,
                     author=author,
                     committer=committer,
-                    message=message
+                    message=message,
+                    branches=branches
                 )
             )
 
@@ -101,6 +127,8 @@ if __name__ == '__main__':
     loader = GitCommitLoader(repo_path=repo)
     shas = loader.get_commit_shas()
     print(f"Found {len(shas)} commit SHAs in {repo}")
+    branches = loader.get_branches()
+    print(f"Branches mapping loaded: {branches}")
     commits = loader.load_commits()
     print(f"Loaded {len(commits)} commits from {repo}")
     if commits:
