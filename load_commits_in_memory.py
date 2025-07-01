@@ -7,8 +7,8 @@ import os
 import argparse
 import json
 
-# Extend Commit to include branch names
-Commit = namedtuple('Commit', ['sha', 'tree', 'parents', 'author', 'committer', 'message', 'branches'])
+# Extend Commit to include branch names and raw content
+Commit = namedtuple('Commit', ['sha', 'tree', 'parents', 'author', 'committer', 'message', 'branches', 'raw'])
 
 class GitCommitLoader:
     """
@@ -83,6 +83,9 @@ class GitCommitLoader:
             raw_data = p_cat.stdout.read(size + 1)[:-1]  # drop trailing newline
             text = raw_data.decode('utf-8', errors='replace')
 
+            # Store raw content before parsing
+            raw_content = text
+
             # Split header lines and commit message
             lines = text.split('\n')
             tree = ''
@@ -117,13 +120,14 @@ class GitCommitLoader:
                     author=author,
                     committer=committer,
                     message=message,
-                    branches=branches
+                    branches=branches,
+                    raw=raw_content
                 )
             )
 
         return commits
 
-    def list_branches(self):
+    def list_branches_json(self):
         """
         List branch names with their corresponding commit SHAs as JSON.
 
@@ -138,12 +142,16 @@ class GitCommitLoader:
 
     def list_commits_json(self):
         """
-        List all commits as JSON.
+        List all commits as JSON, including raw content.
 
         :return: JSON string of commits
         """
         commits = self.load_commits()
-        output = [c._asdict() for c in commits]
+        output = []
+        for c in commits:
+            d = c._asdict()
+            # raw content under key 'raw'
+            output.append(d)
         return json.dumps(output, indent=2)
 
 if __name__ == '__main__':
@@ -163,7 +171,7 @@ if __name__ == '__main__':
 
     if args.list_branches:
         if args.json:
-            print(loader.list_branches())
+            print(loader.list_branches_json())
         else:
             branches = loader.get_branches()
             for sha, names in branches.items():
