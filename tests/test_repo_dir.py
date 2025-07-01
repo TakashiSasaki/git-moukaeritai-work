@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 import os
 import subprocess
 
-from git_repo_inspector.repo_loader import RepoDir
+from git_repo_inspector.repo_dir import RepoDir
 
 class TestRepoDir(unittest.TestCase):
 
