@@ -1,3 +1,3 @@
-# Git Commit Loader
+# Git Repo Inspector
 
-A Python package to load and inspect Git commit objects using `git cat-file --batch`.
+A Python package to inspect Git repositories, loading commits and branches.
