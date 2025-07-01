@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "git-commit-loader"
+version = "0.1.0"
+description = "Load and parse Git commit objects"
+authors = ["Your Name <you@example.com>"]
+packages = [{ include = "git_commit_loader", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.scripts]
+git-commit-loader = "git_commit_loader.__main__:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
