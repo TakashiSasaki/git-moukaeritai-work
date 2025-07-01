@@ -1,6 +1,6 @@
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, ANY
 from git_repo_inspector.branch_loader import BranchLoader
 import subprocess
 
@@ -41,7 +41,8 @@ class TestBranchLoader(unittest.TestCase):
             expected_cmd,
             stdout=subprocess.PIPE,
             text=True,
-            check=True
+            check=True,
+            env=ANY,
         )
 
         # Assert the parsed branch map is correct

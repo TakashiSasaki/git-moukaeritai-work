@@ -1,4 +1,6 @@
 import subprocess
+
+from .env_utils import clean_git_env
 import argparse
 import os
 import json
@@ -30,7 +32,13 @@ class BranchLoader:
                 '--format=%(refname:short) %(objectname)',
                 'refs/heads/'
             ]
-            result: subprocess.CompletedProcess = subprocess.run(cmd, stdout=subprocess.PIPE, text=True, check=True)
+            result: subprocess.CompletedProcess = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                text=True,
+                check=True,
+                env=clean_git_env(),
+            )
             self.branch_map = {}
             for line in result.stdout.splitlines():
                 name, sha = line.split(None, 1)

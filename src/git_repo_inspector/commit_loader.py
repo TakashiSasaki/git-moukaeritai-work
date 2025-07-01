@@ -2,6 +2,8 @@
 # CommitLoader: Load and parse Git commit objects into memory using git cat-file --batch
 
 import subprocess
+
+from .env_utils import clean_git_env
 import json
 import hashlib
 from typing import List, Dict, Optional, Tuple, NamedTuple, Any
@@ -40,7 +42,13 @@ class CommitLoader:
         """
         if self.commit_shas is None:
             cmd: List[str] = ['git', '-C', self.repo_path, 'rev-list', '--all']
-            result: subprocess.CompletedProcess = subprocess.run(cmd, stdout=subprocess.PIPE, text=True, check=True)
+            result: subprocess.CompletedProcess = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                text=True,
+                check=True,
+                env=clean_git_env(),
+            )
             self.commit_shas = result.stdout.splitlines()
         return self.commit_shas
 
@@ -57,7 +65,12 @@ class CommitLoader:
         branch_map: Dict[str, List[str]] = self.get_branches()
         cmd_cat: List[str] = ['git', '-C', self.repo_path, 'cat-file', '--batch']
 
-        p_cat: subprocess.Popen = subprocess.Popen(cmd_cat, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        p_cat: subprocess.Popen = subprocess.Popen(
+            cmd_cat,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            env=clean_git_env(),
+        )
         for sha in shas:
             p_cat.stdin.write(f"{sha}\n".encode())
         p_cat.stdin.close()

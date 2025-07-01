@@ -1,4 +1,6 @@
 import subprocess
+
+from .env_utils import clean_git_env
 import os
 from typing import Optional
 
@@ -25,15 +27,21 @@ class RepoDir:
             # Get absolute Git directory (e.g., .git)
             result_git_dir = subprocess.run(
                 ['git', 'rev-parse', '--absolute-git-dir'],
-                capture_output=True, text=True, check=True
+                capture_output=True,
+                text=True,
+                check=True,
+                env=clean_git_env(),
             )
             self.absolute_git_dir: str = result_git_dir.stdout.strip()
 
             # Check if it's a bare repository
             result_is_bare = subprocess.run(
                 ['git', 'rev-parse', '--is-bare-repository'],
-                capture_output=True, text=True, check=True,
-                cwd=target_path # Run this command in the context of the target path
+                capture_output=True,
+                text=True,
+                check=True,
+                cwd=target_path,  # Run this command in the context of the target path
+                env=clean_git_env(),
             )
             self._is_bare: bool = result_is_bare.stdout.strip() == 'true'
 
@@ -42,7 +50,10 @@ class RepoDir:
                 # Get top-level working directory only for non-bare repositories
                 result_toplevel = subprocess.run(
                     ['git', 'rev-parse', '--show-toplevel'],
-                    capture_output=True, text=True, check=True
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    env=clean_git_env(),
                 )
                 self.toplevel_dir = result_toplevel.stdout.strip()
 
