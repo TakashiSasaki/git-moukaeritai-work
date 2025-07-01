@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, ANY
 import json
 import hashlib
 from typing import List, Dict, Optional, Tuple, Any
@@ -27,7 +27,10 @@ class TestCommitLoader(unittest.TestCase):
         self.assertEqual(shas, ["sha1", "sha2", "sha3"])
         mock_run.assert_called_once_with(
             ['git', '-C', self.mock_repo_path, 'rev-list', '--all'],
-            stdout=subprocess.PIPE, text=True, check=True
+            stdout=subprocess.PIPE,
+            text=True,
+            check=True,
+            env=ANY,
         )
         # Test caching
         shas_cached = self.loader.get_commit_shas()
@@ -93,7 +96,9 @@ class TestCommitLoader(unittest.TestCase):
 
         mock_popen.assert_called_once_with(
             ['git', '-C', self.mock_repo_path, 'cat-file', '--batch'],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            env=ANY,
         )
         mock_proc.stdin.write.assert_any_call(b"commit_sha_1\n")
         mock_proc.stdin.write.assert_any_call(b"commit_sha_2\n")
