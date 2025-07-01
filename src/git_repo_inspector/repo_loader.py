@@ -42,3 +42,17 @@ class RepoLoader:
         finally:
             # Always change back to the original working directory
             os.chdir(original_cwd)
+
+
+def main():
+    """Command-line entry point for RepoLoader."""
+    try:
+        loader = RepoLoader()
+        print(f"Absolute Git Directory: {loader.absolute_git_dir}")
+        print(f"Top-level Working Directory: {loader.toplevel_dir}")
+    except (FileNotFoundError, RuntimeError) as e:
+        print(f"Error: {e}")
+
+
+if __name__ == '__main__':
+    main()
