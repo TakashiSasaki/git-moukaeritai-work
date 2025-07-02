@@ -3,7 +3,14 @@ import os
 from typing import Optional
 
 class RepoDir:
-    __slots__ = ('absolute_git_dir', 'toplevel_dir', '_is_bare')
+    __slots__ = (
+        'absolute_git_dir',
+        'toplevel_dir',
+        '_is_bare',
+        'absolute_git_dir_error',
+        'is_bare_error',
+        'toplevel_dir_error',
+    )
 
     def __init__(self, repo_path: Optional[str] = None) -> None:
         """
@@ -21,40 +28,44 @@ class RepoDir:
             except FileNotFoundError:
                 raise FileNotFoundError(f"Repository path not found: {repo_path}")
 
+        # Initialize members
+        self.absolute_git_dir: Optional[str] = None
+        self.toplevel_dir: Optional[str] = None
+        self._is_bare: Optional[bool] = None
+        self.absolute_git_dir_error: Optional[Exception] = None
+        self.is_bare_error: Optional[Exception] = None
+        self.toplevel_dir_error: Optional[Exception] = None
+
         try:
-            # Get absolute Git directory (e.g., .git)
             result_git_dir = subprocess.run(
                 ['git', 'rev-parse', '--absolute-git-dir'],
                 capture_output=True, text=True, check=True
             )
-            self.absolute_git_dir: str = result_git_dir.stdout.strip()
+            self.absolute_git_dir = result_git_dir.stdout.strip()
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            self.absolute_git_dir_error = e
 
-            # Check if it's a bare repository
+        try:
             result_is_bare = subprocess.run(
                 ['git', 'rev-parse', '--is-bare-repository'],
                 capture_output=True, text=True, check=True,
-                cwd=target_path # Run this command in the context of the target path
+                cwd=target_path
             )
-            self._is_bare: bool = result_is_bare.stdout.strip() == 'true'
+            self._is_bare = result_is_bare.stdout.strip() == 'true'
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            self.is_bare_error = e
 
-            self.toplevel_dir: Optional[str] = None
-            if not self._is_bare:
-                # Get top-level working directory only for non-bare repositories
+        if self._is_bare is False or self._is_bare is None:
+            try:
                 result_toplevel = subprocess.run(
                     ['git', 'rev-parse', '--show-toplevel'],
                     capture_output=True, text=True, check=True
                 )
                 self.toplevel_dir = result_toplevel.stdout.strip()
+            except (subprocess.CalledProcessError, FileNotFoundError) as e:
+                self.toplevel_dir_error = e
 
-        except subprocess.CalledProcessError as e:
-            cmd = " ".join(e.cmd) if isinstance(e.cmd, (list, tuple)) else str(e.cmd)
-            stderr = e.stderr.strip() if e.stderr else ""
-            raise RuntimeError(f"Git command failed ({cmd}): {stderr}") from e
-        except FileNotFoundError:
-            raise RuntimeError("Git command not found. Please ensure Git is installed and in your PATH.")
-        finally:
-            # Always change back to the original working directory
-            os.chdir(original_cwd)
+        os.chdir(original_cwd)
 
     def is_inside_working_tree(self) -> bool:
         """
@@ -62,6 +73,8 @@ class RepoDir:
 
         :return: True if it's a non-bare repository with a working tree, False otherwise.
         """
+        if self._is_bare is None:
+            return False
         return not self._is_bare
 
 
