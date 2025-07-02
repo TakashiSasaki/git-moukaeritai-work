@@ -9,6 +9,13 @@ packages = [{ include = "git_repo_inspector", from = "src" }]
 python = "^3.8.1"
 textual = "^3.5.0"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+pytest-mock = "^3.12.0"
+pytest-asyncio = "^0.23.8"
+
+pytest-asyncio = "^0.23.8"
+
 [tool.poetry.scripts]
 git-repo-inspector = "git_repo_inspector.__main__:main"
 git-repo-inspector-tui = "git_repo_inspector.tui:main"
