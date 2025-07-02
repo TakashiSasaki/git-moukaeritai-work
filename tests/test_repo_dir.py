@@ -64,10 +64,18 @@ class TestRepoDir(unittest.TestCase):
     @patch('subprocess.run', side_effect=subprocess.CalledProcessError(1, 'git', stderr="git error"))
     @patch('os.chdir')
     def test_init_git_command_failure(self, mock_chdir, mock_subprocess_run):
-        with self.assertRaisesRegex(RuntimeError, r"Git command failed \(git\): git error"):
-            RepoDir()
-        mock_subprocess_run.assert_called_once()
-        mock_chdir.assert_called_with(self.original_cwd) # Ensure chdir is restored
+        loader = RepoDir()
+
+        self.assertIsNone(loader.absolute_git_dir)
+        self.assertIsNone(loader.toplevel_dir)
+        self.assertIsNone(loader._is_bare)
+        self.assertIsInstance(loader.absolute_git_dir_error, subprocess.CalledProcessError)
+        self.assertIsInstance(loader.is_bare_error, subprocess.CalledProcessError)
+        self.assertIsInstance(loader.toplevel_dir_error, subprocess.CalledProcessError)
+
+        # All git commands attempted
+        self.assertEqual(mock_subprocess_run.call_count, 3)
+        mock_chdir.assert_called_with(self.original_cwd)
 
     @patch('subprocess.run')
     @patch('os.chdir')
