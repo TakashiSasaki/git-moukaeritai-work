@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from datetime import datetime
 
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -85,17 +86,15 @@ class GitRepoInspectorTUI(App):
             parts = author_info.split(' ')
             timestamp = int(parts[-2])
             # Convert timestamp to a readable format, e.g., YYYY-MM-DD HH:MM:SS
-            from datetime import datetime
             return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
         except (IndexError, ValueError):
             return "Unknown Date"
 
     def _get_author_name(self, author_info: str) -> str:
         """Extracts the author name from the full author string."""
-        try:
+        if '<' in author_info:
             return author_info.split('<', 1)[0].strip()
-        except: # Broad except as parsing can be tricky
-            return "Unknown Author"
+        return "Unknown Author"
 
     def _update_commit_table(self):
         """Updates the commit table with data from CommitLoader."""
