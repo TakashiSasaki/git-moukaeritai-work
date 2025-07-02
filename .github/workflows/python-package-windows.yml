@@ -26,6 +26,10 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f pyproject.toml ]; then
+          python -m pip install build setuptools
+          python -m pip install .
+        fi
       shell: bash
     - name: Lint with flake8
       run: |
