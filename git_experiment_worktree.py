@@ -167,9 +167,10 @@ try:
 
     # Experiment: Run git status with both GIT_DIR and GIT_WORK_TREE set
     print(f"\nExperiment: Running git status with GIT_DIR and GIT_WORK_TREE set for {target_worktree}")
+    print(f"Current directory: {os.getcwd()}")
     env = os.environ.copy()
-    env["GIT_DIR"] = os.path.join(sandbox_path, "bare.git")
-    env["GIT_WORK_TREE"] = os.path.abspath(target_worktree)
+    env["GIT_DIR"] = os.path.join(sandbox_path, "bare.git/worktrees/branch2")
+    env["GIT_WORK_TREE"] = os.getcwd()
     print(f"Command: git status")
     print(f"GIT_DIR: {env["GIT_DIR"]}")
     print(f"GIT_WORK_TREE: {env["GIT_WORK_TREE"]}")
@@ -178,15 +179,15 @@ try:
     print(f"Stderr:\n{result.stderr}")
     print(f"Exit Code: {result.returncode}")
 
-    expected_error_message_both = r"fatal: this operation must be run in a work tree"
-    expected_exit_code_both = 128
+    expected_error_message_both = ""
+    expected_exit_code_both = 0
 
-    if expected_error_message_both in result.stderr and result.returncode == expected_exit_code_both:
-        print("\nConfirmation: Received expected error message and exit code for both GIT_DIR and GIT_WORK_TREE.")
+    if result.returncode == expected_exit_code_both and not result.stderr:
+        print("\nConfirmation: Received expected successful execution for both GIT_DIR and GIT_WORK_TREE.")
     else:
-        print("\nConfirmation: Did NOT receive expected error message or exit code for both GIT_DIR and GIT_WORK_TREE.")
-        print(f"Expected Stderr: '{expected_error_message_both}'")
+        print("\nConfirmation: Did NOT receive expected successful execution for both GIT_DIR and GIT_WORK_TREE.")
         print(f"Expected Exit Code: {expected_exit_code_both}")
+        print(f"Actual Stderr: {result.stderr}")
 
     # Display the final current directory
     print("\nFinal current directory:")
