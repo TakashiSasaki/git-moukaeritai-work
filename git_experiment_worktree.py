@@ -3,6 +3,21 @@ import shutil
 import subprocess
 import stat
 
+# Function to remove read-only files
+def remove_readonly(func, path, excinfo):
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+def initial_setup_and_cleanup(sandbox_path):
+    # If the directory exists, remove it and its contents
+    if os.path.exists(sandbox_path):
+        print(f"Removing existing directory: {sandbox_path}")
+        shutil.rmtree(sandbox_path, onerror=remove_readonly)
+
+    # Create the sandbox directory
+    print(f"Creating directory: {sandbox_path}")
+    os.makedirs(sandbox_path)
+
 # Define the sandbox directory name
 sandbox_dir = "sandbox"
 
@@ -10,19 +25,7 @@ sandbox_dir = "sandbox"
 base_dir = os.path.abspath(os.getcwd())
 sandbox_path = os.path.join(base_dir, sandbox_dir)
 
-# Function to remove read-only files
-def remove_readonly(func, path, excinfo):
-    os.chmod(path, stat.S_IWRITE)
-    func(path)
-
-# If the directory exists, remove it and its contents
-if os.path.exists(sandbox_path):
-    print(f"Removing existing directory: {sandbox_path}")
-    shutil.rmtree(sandbox_path, onerror=remove_readonly)
-
-# Create the sandbox directory
-print(f"Creating directory: {sandbox_path}")
-os.makedirs(sandbox_path)
+initial_setup_and_cleanup(sandbox_path)
 
 original_dir = os.getcwd()
 
