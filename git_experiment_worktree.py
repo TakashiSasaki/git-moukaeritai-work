@@ -131,70 +131,70 @@ def run_experiment_3(original_dir, sandbox_dir, sandbox_path):
     print("\nFinal current directory:")
     print(os.getcwd())
 
-original_dir = os.getcwd()
-
-# Initial Git setup
-os.chdir(sandbox_path)
-print(f"Changed current directory to: {os.getcwd()}")
-
-print("Creating bare repository: bare.git")
-subprocess.run("git init --bare bare.git", check=True, shell=True)
-
-print("Cloning bare.git to bare")
-subprocess.run("git clone bare.git bare", check=True, shell=True)
-
-os.chdir("bare")
-print(f"Changed current directory to: {os.getcwd()}")
-
-print("Creating date.txt")
-subprocess.run('cmd /c "date /t > date.txt"', check=True, shell=True)
-
-print("Configuring local git user")
-subprocess.run('git config user.email "test@example.com"', check=True, shell=True)
-subprocess.run('git config user.name "Test User"', check=True, shell=True)
-
-print("Committing date.txt")
-subprocess.run("git add date.txt", check=True, shell=True)
-subprocess.run('git commit -m "Add date.txt"', check=True, shell=True)
-
-print("Pushing to origin")
-subprocess.run("git push origin master", check=True, shell=True)
-
-for i in range(1, 4):
-    branch_name = f"branch{i}"
-    print(f"Creating and pushing branch: {branch_name}")
-    subprocess.run(f"git branch {branch_name}", check=True, shell=True)
-    subprocess.run(f"git push origin {branch_name}", check=True, shell=True)
-
-os.chdir(original_dir)
-os.chdir(sandbox_dir)
-for i in range(1, 4):
-    branch_name = f"branch{i}"
-    worktree_path = f"{branch_name}"
-    print(f"Creating worktree for {branch_name} at {worktree_path}")
-    subprocess.run(f"git --git-dir=bare.git worktree add {worktree_path} {branch_name}", check=True, shell=True)
-
-for i in range(1, 4):
-    branch_name = f"branch{i}"
-    worktree_path = f"{branch_name}"
-    os.chdir(sandbox_path) # Ensure we are in sandbox_path before changing to worktree
-    os.chdir(worktree_path)
+def setup_git_environment(original_dir, sandbox_dir, sandbox_path):
+    # Initial Git setup
+    os.chdir(sandbox_path)
     print(f"Changed current directory to: {os.getcwd()}")
+
+    print("Creating bare repository: bare.git")
+    subprocess.run("git init --bare bare.git", check=True, shell=True)
+
+    print("Cloning bare.git to bare")
+    subprocess.run("git clone bare.git bare", check=True, shell=True)
+
+    os.chdir("bare")
+    print(f"Changed current directory to: {os.getcwd()}")
+
+    print("Creating date.txt")
+    subprocess.run('cmd /c "date /t > date.txt"', check=True, shell=True)
+
     print("Configuring local git user")
     subprocess.run('git config user.email "test@example.com"', check=True, shell=True)
     subprocess.run('git config user.name "Test User"', check=True, shell=True)
-    file_name = f"file{i}.txt"
-    print(f"Creating {file_name} in {branch_name}")
-    with open(file_name, "w") as f:
-        f.write(f"This is file {i} in branch {i}")
-    subprocess.run(f"git add {file_name}", check=True, shell=True)
-    subprocess.run(f'git commit -m "Add {file_name}"', check=True, shell=True)
-    subprocess.run(f"git push ../bare.git {branch_name}", check=True, shell=True)
 
-print("\nFinal current directory:")
-print(os.getcwd())
+    print("Committing date.txt")
+    subprocess.run("git add date.txt", check=True, shell=True)
+    subprocess.run('git commit -m "Add date.txt"', check=True, shell=True)
+
+    print("Pushing to origin")
+    subprocess.run("git push origin master", check=True, shell=True)
+
+    for i in range(1, 4):
+        branch_name = f"branch{i}"
+        print(f"Creating and pushing branch: {branch_name}")
+        subprocess.run(f"git branch {branch_name}", check=True, shell=True)
+        subprocess.run(f"git push origin {branch_name}", check=True, shell=True)
+
+    os.chdir(original_dir)
+    os.chdir(sandbox_dir)
+    for i in range(1, 4):
+        branch_name = f"branch{i}"
+        worktree_path = f"{branch_name}"
+        print(f"Creating worktree for {branch_name} at {worktree_path}")
+        subprocess.run(f"git --git-dir=bare.git worktree add {worktree_path} {branch_name}", check=True, shell=True)
+
+    for i in range(1, 4):
+        branch_name = f"branch{i}"
+        worktree_path = f"{branch_name}"
+        os.chdir(sandbox_path) # Ensure we are in sandbox_path before changing to worktree
+        os.chdir(worktree_path)
+        print(f"Changed current directory to: {os.getcwd()}")
+        print("Configuring local git user")
+        subprocess.run('git config user.email "test@example.com"', check=True, shell=True)
+        subprocess.run('git config user.name "Test User"', check=True, shell=True)
+        file_name = f"file{i}.txt"
+        print(f"Creating {file_name} in {branch_name}")
+        with open(file_name, "w") as f:
+            f.write(f"This is file {i} in branch {i}")
+        subprocess.run(f"git add {file_name}", check=True, shell=True)
+        subprocess.run(f'git commit -m "Add {file_name}"', check=True, shell=True)
+        subprocess.run(f"git push ../bare.git {branch_name}", check=True, shell=True)
+
+    print("\nFinal current directory:")
+    print(os.getcwd())
 
 try:
+    setup_git_environment(original_dir, sandbox_dir, sandbox_path)
     # Call the experiments
     run_experiment_1(original_dir, sandbox_dir, sandbox_path)
     run_experiment_2(original_dir, sandbox_dir, sandbox_path)
