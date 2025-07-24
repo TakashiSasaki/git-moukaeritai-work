@@ -101,6 +101,38 @@ try:
     print("\nFinal current directory:")
     print(os.getcwd())
 
+    # Rename sandbox/branch3 to sandbox/branch3_moved
+    os.chdir(original_dir)
+    os.chdir(sandbox_dir)
+    old_name = "branch3"
+    new_name = "branch3_moved"
+    print(f"Renaming {old_name} to {new_name}")
+    os.rename(old_name, new_name)
+
+    # Try to create a new file and commit in the renamed worktree
+    # Note: Even after renaming the worktree directory, Git can still track it
+    # and allow commits/pushes because the worktree's internal Git directory
+    # (e.g., .git/worktrees/branch3) still points to the correct bare repository.
+    # However, `git worktree list` will show it as 'prunable' because the original
+    # path it was added with is no longer valid.
+    os.chdir(new_name)
+    print(f"Changed current directory to: {os.getcwd()}")
+    file_name = "new_file_in_moved_branch.txt"
+    print(f"Creating {file_name} in {new_name}")
+    with open(file_name, "w") as f:
+        f.write(f"This is a new file in {new_name}")
+    subprocess.run(f"git add {file_name}", check=True, shell=True)
+    try:
+        subprocess.run(f'git commit -m "Add {file_name} in moved branch" --no-verify', check=True, shell=True)
+        subprocess.run(f"git push ../bare.git branch3", check=True, shell=True)
+    except subprocess.CalledProcessError as e:
+        print(f"\nError during commit/push in renamed worktree: {e}")
+        print(f"Stderr: {e.stderr.decode()}")
+
+    # Display the final current directory
+    print("\nFinal current directory:")
+    print(os.getcwd())
+
 finally:
     # Always change back to the original directory
     os.chdir(original_dir)
