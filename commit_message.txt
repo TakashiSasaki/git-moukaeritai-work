@@ -1,0 +1,3 @@
+Refactor: Organize project directory structure
+
+Moved `.gitignore` and `git_experiment_worktree.py` into a new `hello-git-worktree/` directory to better organize the project files.
