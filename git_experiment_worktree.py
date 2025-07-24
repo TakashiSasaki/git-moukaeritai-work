@@ -133,6 +133,65 @@ try:
     print("\nFinal current directory:")
     print(os.getcwd())
 
+    # Experiment: Remove .git file from sandbox/branch2 and run git status
+    os.chdir(original_dir)
+    os.chdir(sandbox_dir)
+    target_worktree = "branch2"
+    git_file_path = os.path.join(target_worktree, ".git")
+    print(f"\nExperiment: Removing {git_file_path} and running git status")
+    if os.path.exists(git_file_path):
+        os.remove(git_file_path)
+        print(f"Removed {git_file_path}")
+    else:
+        print(f"{git_file_path} does not exist.")
+
+    os.chdir(target_worktree)
+    print(f"Changed current directory to: {os.getcwd()}")
+    print(f"\nExperiment: Running git status with GIT_WORK_TREE set for {target_worktree}")
+    env = os.environ.copy()
+    env["GIT_WORK_TREE"] = os.path.abspath(target_worktree)
+    result = subprocess.run("git status", capture_output=True, text=True, shell=True, env=env)
+    print(f"Stdout:\n{result.stdout}")
+    print(f"Stderr:\n{result.stderr}")
+    print(f"Exit Code: {result.returncode}")
+
+    expected_error_message = "fatal: this operation must be run in a work tree"
+    expected_exit_code = 128
+
+    if expected_error_message in result.stderr and result.returncode == expected_exit_code:
+        print("\nConfirmation: Received expected error message and exit code.")
+    else:
+        print("\nConfirmation: Did NOT receive expected error message or exit code.")
+        print(f"Expected Stderr: '{expected_error_message}'")
+        print(f"Expected Exit Code: {expected_exit_code}")
+
+    # Experiment: Run git status with both GIT_DIR and GIT_WORK_TREE set
+    print(f"\nExperiment: Running git status with GIT_DIR and GIT_WORK_TREE set for {target_worktree}")
+    env = os.environ.copy()
+    env["GIT_DIR"] = os.path.join(sandbox_path, "bare.git")
+    env["GIT_WORK_TREE"] = os.path.abspath(target_worktree)
+    print(f"Command: git status")
+    print(f"GIT_DIR: {env["GIT_DIR"]}")
+    print(f"GIT_WORK_TREE: {env["GIT_WORK_TREE"]}")
+    result = subprocess.run("git status", capture_output=True, text=True, shell=True, env=env)
+    print(f"Stdout:\n{result.stdout}")
+    print(f"Stderr:\n{result.stderr}")
+    print(f"Exit Code: {result.returncode}")
+
+    expected_error_message_both = r"fatal: this operation must be run in a work tree"
+    expected_exit_code_both = 128
+
+    if expected_error_message_both in result.stderr and result.returncode == expected_exit_code_both:
+        print("\nConfirmation: Received expected error message and exit code for both GIT_DIR and GIT_WORK_TREE.")
+    else:
+        print("\nConfirmation: Did NOT receive expected error message or exit code for both GIT_DIR and GIT_WORK_TREE.")
+        print(f"Expected Stderr: '{expected_error_message_both}'")
+        print(f"Expected Exit Code: {expected_exit_code_both}")
+
+    # Display the final current directory
+    print("\nFinal current directory:")
+    print(os.getcwd())
+
 finally:
     # Always change back to the original directory
     os.chdir(original_dir)
