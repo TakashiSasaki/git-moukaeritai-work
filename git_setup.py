@@ -104,8 +104,8 @@ try:
     # Rename sandbox/branch3 to sandbox/branch3_moved
     os.chdir(original_dir)
     os.chdir(sandbox_dir)
-    old_name = "branch3"
-    new_name = "branch3_moved"
+    old_name = "branch1"
+    new_name = "branch1_moved"
     print(f"Renaming {old_name} to {new_name}")
     os.rename(old_name, new_name)
 
@@ -123,8 +123,8 @@ try:
         f.write(f"This is a new file in {new_name}")
     subprocess.run(f"git add {file_name}", check=True, shell=True)
     try:
-        subprocess.run(f'git commit -m "Add {file_name} in moved branch" --no-verify', check=True, shell=True)
-        subprocess.run(f"git push ../bare.git branch3", check=True, shell=True)
+        subprocess.run(f'git commit -m "Add {file_name} in moved branch1" --no-verify', check=True, shell=True)
+        subprocess.run(f"git push ../bare.git branch1", check=True, shell=True)
     except subprocess.CalledProcessError as e:
         print(f"\nError during commit/push in renamed worktree: {e}")
         print(f"Stderr: {e.stderr.decode()}")
