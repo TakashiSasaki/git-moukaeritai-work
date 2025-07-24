@@ -168,10 +168,14 @@ try:
         print(f"Expected Exit Code: {expected_exit_code}")
 
     # Experiment 3: Run git status with both GIT_DIR and GIT_WORK_TREE set
-    print(f"\nExperiment: Running git status with GIT_DIR and GIT_WORK_TREE set for {target_worktree}")
+    os.chdir(original_dir) # Go back to original_dir
+    os.chdir(sandbox_dir) # Go to sandbox_dir
+    target_worktree_exp3 = "branch3" # Define a new target_worktree for this experiment
+    os.chdir(target_worktree_exp3) # Change to branch3 directory
+    print(f"\nExperiment: Running git status with GIT_DIR and GIT_WORK_TREE set for {target_worktree_exp3}")
     print(f"Current directory: {os.getcwd()}")
     env = os.environ.copy()
-    env["GIT_DIR"] = os.path.join(sandbox_path, "bare.git/worktrees/branch2")
+    env["GIT_DIR"] = os.path.join(sandbox_path, f"bare.git/worktrees/{target_worktree_exp3}")
     env["GIT_WORK_TREE"] = os.getcwd()
     print(f"Command: git status")
     print(f"GIT_DIR: {env["GIT_DIR"]}")
