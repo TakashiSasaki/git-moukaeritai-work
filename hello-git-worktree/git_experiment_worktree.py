@@ -2,13 +2,14 @@ import os
 import shutil
 import subprocess
 import stat
+from typing import Callable
 
 # Function to remove read-only files
-def remove_readonly(func, path, excinfo):
+def remove_readonly(func: Callable, path: str, excinfo: tuple):
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
-def initial_setup_and_cleanup(sandbox_path):
+def initial_setup_and_cleanup(sandbox_path: str):
     # If the directory exists, remove it and its contents
     if os.path.exists(sandbox_path):
         print(f"Removing existing directory: {sandbox_path}")
@@ -18,7 +19,7 @@ def initial_setup_and_cleanup(sandbox_path):
     print(f"Creating directory: {sandbox_path}")
     os.makedirs(sandbox_path)
 
-def run_experiment_1(original_dir, sandbox_dir, sandbox_path):
+def run_experiment_1(original_dir: str, sandbox_dir: str, sandbox_path: str):
     # Experiment 1: Rename a worktree directory
     # Rename sandbox/branch1 to sandbox/branch1_moved
     os.chdir(original_dir)
@@ -52,7 +53,7 @@ def run_experiment_1(original_dir, sandbox_dir, sandbox_path):
     print("\nFinal current directory:")
     print(os.getcwd())
 
-def run_experiment_2(original_dir, sandbox_dir, sandbox_path):
+def run_experiment_2(original_dir: str, sandbox_dir: str, sandbox_path: str):
     # Experiment 2: Remove .git file from sandbox/branch2 and run git status
     os.chdir(original_dir)
     os.chdir(sandbox_dir)
@@ -89,7 +90,7 @@ def run_experiment_2(original_dir, sandbox_dir, sandbox_path):
     print("\nFinal current directory:")
     print(os.getcwd())
 
-def run_experiment_3(original_dir, sandbox_dir, sandbox_path):
+def run_experiment_3(original_dir: str, sandbox_dir: str, sandbox_path: str):
     # Experiment 3: Run git status with both GIT_DIR and GIT_WORK_TREE set
     os.chdir(original_dir) # Go back to original_dir
     os.chdir(sandbox_dir) # Go to sandbox_dir
@@ -122,7 +123,7 @@ def run_experiment_3(original_dir, sandbox_dir, sandbox_path):
     print("\nFinal current directory:")
     print(os.getcwd())
 
-def setup_git_environment(original_dir, sandbox_dir, sandbox_path):
+def setup_git_environment(original_dir: str, sandbox_dir: str, sandbox_path: str):
     # Initial Git setup
     os.chdir(sandbox_path)
     print(f"Changed current directory to: {os.getcwd()}")
