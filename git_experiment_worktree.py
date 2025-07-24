@@ -101,7 +101,9 @@ try:
     print("\nFinal current directory:")
     print(os.getcwd())
 
-    # Rename sandbox/branch3 to sandbox/branch3_moved
+
+    # Experiment 1: Rename a worktree directory
+    # Rename sandbox/branch1 to sandbox/branch1_moved
     os.chdir(original_dir)
     os.chdir(sandbox_dir)
     old_name = "branch1"
@@ -133,7 +135,7 @@ try:
     print("\nFinal current directory:")
     print(os.getcwd())
 
-    # Experiment: Remove .git file from sandbox/branch2 and run git status
+    # Experiment 2: Remove .git file from sandbox/branch2 and run git status
     os.chdir(original_dir)
     os.chdir(sandbox_dir)
     target_worktree = "branch2"
@@ -165,7 +167,7 @@ try:
         print(f"Expected Stderr: '{expected_error_message}'")
         print(f"Expected Exit Code: {expected_exit_code}")
 
-    # Experiment: Run git status with both GIT_DIR and GIT_WORK_TREE set
+    # Experiment 3: Run git status with both GIT_DIR and GIT_WORK_TREE set
     print(f"\nExperiment: Running git status with GIT_DIR and GIT_WORK_TREE set for {target_worktree}")
     print(f"Current directory: {os.getcwd()}")
     env = os.environ.copy()
