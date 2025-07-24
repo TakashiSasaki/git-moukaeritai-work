@@ -18,18 +18,6 @@ def initial_setup_and_cleanup(sandbox_path):
     print(f"Creating directory: {sandbox_path}")
     os.makedirs(sandbox_path)
 
-# Define the sandbox directory name
-sandbox_dir = "sandbox"
-
-# Get the absolute path for the sandbox directory
-base_dir = os.path.abspath(os.getcwd())
-sandbox_path = os.path.join(base_dir, sandbox_dir)
-
-initial_setup_and_cleanup(sandbox_path)
-
-original_dir = os.getcwd()
-
-
 def run_experiment_1(original_dir, sandbox_dir, sandbox_path):
     # Experiment 1: Rename a worktree directory
     # Rename sandbox/branch1 to sandbox/branch1_moved
@@ -196,14 +184,28 @@ def setup_git_environment(original_dir, sandbox_dir, sandbox_path):
     print("\nFinal current directory:")
     print(os.getcwd())
 
-try:
-    setup_git_environment(original_dir, sandbox_dir, sandbox_path)
-    # Call the experiments
-    run_experiment_1(original_dir, sandbox_dir, sandbox_path)
-    run_experiment_2(original_dir, sandbox_dir, sandbox_path)
-    run_experiment_3(original_dir, sandbox_dir, sandbox_path)
+def main():
+    # Define the sandbox directory name
+    sandbox_dir = "sandbox"
 
-finally:
-    # Always change back to the original directory
-    os.chdir(original_dir)
-    print(f"\nChanged back to original directory: {os.getcwd()}")
+    # Get the absolute path for the sandbox directory
+    base_dir = os.path.abspath(os.getcwd())
+    sandbox_path = os.path.join(base_dir, sandbox_dir)
+
+    original_dir = os.getcwd()
+
+    try:
+        initial_setup_and_cleanup(sandbox_path)
+        setup_git_environment(original_dir, sandbox_dir, sandbox_path)
+        # Call the experiments
+        run_experiment_1(original_dir, sandbox_dir, sandbox_path)
+        run_experiment_2(original_dir, sandbox_dir, sandbox_path)
+        run_experiment_3(original_dir, sandbox_dir, sandbox_path)
+
+    finally:
+        # Always change back to the original directory
+        os.chdir(original_dir)
+        print(f"\nChanged back to original directory: {os.getcwd()}")
+
+if __name__ == "__main__":
+    main()
